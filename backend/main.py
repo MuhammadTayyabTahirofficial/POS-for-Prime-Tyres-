@@ -1,7 +1,23 @@
-from pydantic import BaseModel
 from typing import List, Optional
-from fastapi import HTTPException
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
+# --- create app FIRST ---
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- health ---
+@app.get("/api/health")
+def health():
+    return {"ok": True}
+
+# --- products model & in-memory store ---
 class Product(BaseModel):
     id: int
     name: str
@@ -16,6 +32,7 @@ PRODUCTS: List[Product] = [
     Product(id=2, name="Tyre B", sku="TYR-B", price=95.0, stock=25),
 ]
 
+# --- products endpoints ---
 @app.get("/api/products", response_model=List[Product])
 def list_products():
     return PRODUCTS
